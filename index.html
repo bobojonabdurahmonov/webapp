@@ -4,35 +4,176 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="index.css">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <title>BOBOJON | Buyurtma</title>
 </head>
 <body>
     <div class="maincontainer">
         <h4>Buyurtma</h4>
         <div class="toldirish">
-            <input type="text" placeholder="F.I.O">
-            <input type="text" placeholder="Tel. raqam">
-            <select>
-                <optgroup label="Viloyatalar">
-                <option>-</option>
-                <option>Samarqand</option>
-                <option>Jizzax</option>
-                <option>Toshkent</option>
-                <option>Navoi</option>
-                <option>Buxoro</option>
-                <option>Andijon</option>
-                <option>Farg'ona</option>
-                <option>Namangan</option>
-                <option>Xorazm</option>
-                <option>Sirdaryo</option>
-                <option>Surxondaryo</option>
-                <option>Qashqadaryo</option>
-                <option>Qoroqolpog'iston</option>
-            </optgroup>
-            </select>
-            <button>Book</button>
+            <form id="nameForm">
+                <label>Ism:</label>
+                <input type="text" placeholder="F.I.O" id="name">
+                <label>Telefon raqam:</label>
+                <input type="text" placeholder="Tel. raqam" id="phoneNum">
+                <label>Viloyat:</label>
+                <select id="viloyat">
+                    <optgroup label="Viloyatalar">
+                        <option>-</option>
+                        <option>Samarqand</option>
+                        <option>Jizzax</option>
+                        <option>Toshkent</option>
+                        <option>Navoi</option>
+                        <option>Buxoro</option>
+                        <option>Andijon</option>
+                        <option>Farg'ona</option>
+                        <option>Namangan</option>
+                        <option>Xorazm</option>
+                        <option>Sirdaryo</option>
+                        <option>Surxondaryo</option>
+                        <option>Qashqadaryo</option>
+                        <option>Qoroqolpog'iston</option>
+                    </optgroup>
+                </select>
+                <button id="submitBtn">Book</button>
+                <div id='error'></div>
+            </form>
         </div>
     </div>
     
+
+    <script>
+        // Telegram Web App obyektini olish
+        const tg = window.Telegram.WebApp;
+        
+        // Web App ni tayyorlash
+        tg.ready();
+        tg.expand();
+        
+        // Form elementlarini olish
+        const form = document.getElementById('nameForm');
+        const nameInput = document.getElementById('name');
+        const phoneInput = document.getElementById('phoneNum');
+        const viloyatInput = document.getElementById('viloyat');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorDiv = document.getElementById('error');
+        
+        // Main button ni sozlash
+        tg.MainButton.text = "Yuborish";
+        tg.MainButton.show();
+        
+        // Input o'zgarganida main button holatini yangilash
+        nameInput.addEventListener('input', function() {
+            const name = this.value.trim();
+            errorDiv.textContent = '';
+            
+            if (name.length > 0) {
+                tg.MainButton.enable();
+                submitBtn.disabled = false;
+            } else {
+                tg.MainButton.disable();
+                submitBtn.disabled = true;
+            }
+        });
+        
+        phoneInput.addEventListener('input', function() {
+            const phone = this.value.trim();
+            errorDiv.textContent = '';
+            
+            if (phone.length > 0) {
+                tg.MainButton.enable();
+                submitBtn.disabled = false;
+            } else {
+                tg.MainButton.disable();
+                submitBtn.disabled = true;
+            }
+        });
+        
+        viloyatInput.addEventListener('input', function() {
+            const viloyat = this.value.trim();
+            errorDiv.textContent = '';
+            
+            if (viloyat.length > 0) {
+                tg.MainButton.enable();
+                submitBtn.disabled = false;
+            } else {
+                tg.MainButton.disable();
+                submitBtn.disabled = true;
+            }
+        });
+        
+        // Form submit qilish
+        function submitForm() {
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const viloyat = viloyatInput.value.trim();
+            
+            if (!name) {
+                errorDiv.textContent = 'Iltimos, ismingizni kiriting!';
+                return;
+            }
+            
+            if (name.length < 2) {
+                errorDiv.textContent = 'Ism kamida 2 ta belgidan iborat bo\'lishi kerak!';
+                return;
+            }
+            
+            if (name.length > 50) {
+                errorDiv.textContent = 'Ism 50 ta belgidan oshmasligi kerak!';
+                return;
+            }
+
+            if (!phone) {
+                errorDiv.textContent = 'Iltimos, telefon raqamingiz kiriting!';
+                return;
+            }
+            
+            if (phone.length < 13) {
+                errorDiv.textContent = 'Ism kamida 13 ta belgidan iborat bo\'lishi kerak!';
+                return;
+            }
+
+            const forbiddenChars = ['?', '=', '!', '$'];
+
+            for (let char of forbiddenChars) {
+                if (phone.includes(char)) {
+                    errorDiv.textContent = 'Iltimos, to\'g\'ri belgi kiriting!';
+                    return;
+                }
+            }
+
+            if (viloyat == '-') {
+                errorDiv.textContent = 'Iltimos, viloyatingizni kiriting!';
+                return;
+            }
+            
+            // Ma'lumotlarni botga yuborish
+            tg.sendData(JSON.stringify({
+                name: name,
+                phonenum : phone,
+                adress: viloyat,
+                timestamp: new Date().toISOString()
+            }));
+            
+            // Web App ni yopish
+            tg.close();
+        }
+        
+        // Form submit hodisasi
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitForm();
+        });
+        
+        // Main button bosilganda
+        tg.MainButton.onClick(submitForm);
+        
+        // Dastlabki holat
+        tg.MainButton.disable();
+        submitBtn.disabled = true;
+        
+        // Focus qilish
+        nameInput.focus();
+    </script>
 </body>
 </html>
