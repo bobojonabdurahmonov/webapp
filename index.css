@@ -8,12 +8,18 @@ h4 {
     flex-direction: column;
 }
 
+#nameForm {
+    display: flex;
+    flex-direction: column;
+}
+
 input {
     margin-top: 10px;
     border: 1px solid grey;
     width: 150px;
     height: 20px;
     padding: 5px;
+    margin-bottom: 5px;
 }
 
 input:focus {
@@ -47,4 +53,8 @@ button {
 button:active {
     background-color: white;
     color: blue;
+}
+
+#error {
+    color: red;
 }
